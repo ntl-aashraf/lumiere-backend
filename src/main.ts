@@ -27,6 +27,8 @@ async function bootstrap() {
   });
   app.setGlobalPrefix('api');
 
+  console.log('DATABASE HOST:', process.env.DATABASE_HOST);
+
   const port =
     Number(configService.get<string>('PORT')) ||
     Number(process.env.PORT) ||

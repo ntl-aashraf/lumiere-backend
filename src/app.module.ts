@@ -20,8 +20,11 @@ import { WatchLater } from './watch-later/entities/watch-later.entity';
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get('DATABASE_HOST'),
-        port: configService.get('DATABASE_PORT'),
+        host: configService.get<string>('DATABASE_HOST') ?? 'localhost',
+        port: parseInt(
+          configService.get<string>('DATABASE_PORT') ?? '5432',
+          10,
+        ),
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
