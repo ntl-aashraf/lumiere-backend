@@ -1,4 +1,4 @@
-// app.module.ts - Railway-optimized version
+// app.module.ts - Nuclear SSL bypass
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -22,18 +22,17 @@ import { WatchLater } from './watch-later/entities/watch-later.entity';
       useFactory: async (configService: ConfigService) => {
         const isProduction = process.env.NODE_ENV === 'production';
 
-        // Railway-specific: Use process.env directly in production
         if (isProduction) {
-          console.log('🚀 Railway Production DB Config');
+          console.log('🚀 Railway Production DB Config - NUCLEAR SSL BYPASS');
           console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+
+          // Override Node.js TLS settings globally
+          process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
           return {
             type: 'postgres',
-            url: process.env.DATABASE_URL, // Direct access for Railway
-            ssl: {
-              rejectUnauthorized: false,
-              checkServerIdentity: false,
-            },
+            url: process.env.DATABASE_URL,
+            ssl: false, // Completely disable SSL
             entities: [User, Favorite, WatchLater],
             synchronize: false,
             logging: false,
@@ -46,11 +45,12 @@ import { WatchLater } from './watch-later/entities/watch-later.entity';
               max: 10,
               statement_timeout: 60000,
               idle_in_transaction_session_timeout: 60000,
+              ssl: false, // Also disable in extra options
             },
           };
         }
 
-        // Local development - use ConfigService
+        // Local development
         return {
           type: 'postgres',
           host: configService.get<string>('DATABASE_HOST') ?? 'localhost',
@@ -61,10 +61,7 @@ import { WatchLater } from './watch-later/entities/watch-later.entity';
           username: configService.get('DATABASE_USERNAME'),
           password: configService.get('DATABASE_PASSWORD'),
           database: configService.get('DATABASE_NAME'),
-          ssl:
-            configService.get('DATABASE_SSL') === 'true'
-              ? { rejectUnauthorized: false }
-              : false,
+          ssl: false,
           entities: [User, Favorite, WatchLater],
           synchronize: false,
           logging: true,
