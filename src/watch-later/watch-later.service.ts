@@ -46,39 +46,12 @@ export class WatchLaterService {
     }
   }
 
-  async findAll(
-    userId: string,
-    page = 1,
-    limit = 20,
-    showWatched = true,
-  ): Promise<{
-    data: WatchLater[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  }> {
-    const skip = (page - 1) * limit;
-
-    const where: any = { userId };
-    if (!showWatched) {
-      where.isWatched = false;
-    }
-
-    const [data, total] = await this.watchLaterRepository.findAndCount({
-      where,
-      order: { addedAt: 'DESC' },
-      skip,
-      take: limit,
+  async findAll(userId: string) {
+    const data = await this.watchLaterRepository.find({
+      where: { userId },
     });
 
-    return {
-      data,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
+    return data;
   }
 
   async findOne(userId: string, id: string): Promise<WatchLater> {
@@ -172,21 +145,6 @@ export class WatchLaterService {
       order: { addedAt: 'DESC' },
       take: 10,
     });
-  }
-
-  // Get unwatched items only
-  async getUnwatched(
-    userId: string,
-    page = 1,
-    limit = 20,
-  ): Promise<{
-    data: WatchLater[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  }> {
-    return await this.findAll(userId, page, limit, false);
   }
 
   // Search in watch later

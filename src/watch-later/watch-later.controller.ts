@@ -29,7 +29,8 @@ export class WatchLaterController {
   }
 
   @Get()
-  async getUserWatchLater(@Query('userId') userId: string) {
+  async getUserWatchLater(@Req() req) {
+    const userId = req.user.id;
     return this.watchLaterService.findAll(userId);
   }
 
@@ -41,7 +42,9 @@ export class WatchLaterController {
   }
 
   @Delete()
-  async clearUserWatchLater(@Query('userId') userId: string) {
+  async clearUserWatchLater(@Req() req) {
+    const userId = req.user.id;
+
     return this.watchLaterService.removeAll(userId);
   }
 }
