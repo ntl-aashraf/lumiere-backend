@@ -20,7 +20,7 @@ import { WatchLater } from './watch-later/entities/watch-later.entity';
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get('DATABASE_HOST'),
-        port: parseInt(configService.get('DATABASE_PORT') as string, 10),
+        port: 27004,
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
