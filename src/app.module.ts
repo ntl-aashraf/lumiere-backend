@@ -14,6 +14,7 @@ import { WatchLater } from './watch-later/entities/watch-later.entity';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
       envFilePath: '.env',
     }),
     TypeOrmModule.forRootAsync({
