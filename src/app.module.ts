@@ -1,3 +1,4 @@
+// app.module.ts - Railway-optimized version
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -18,25 +19,57 @@ import { WatchLater } from './watch-later/entities/watch-later.entity';
       envFilePath: '.env',
     }),
     TypeOrmModule.forRootAsync({
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DATABASE_HOST') ?? 'localhost',
-        port: parseInt(
-          configService.get<string>('DATABASE_PORT') ?? '5432',
-          10,
-        ),
-        username: configService.get('DATABASE_USERNAME'),
-        password: configService.get('DATABASE_PASSWORD'),
-        database: configService.get('DATABASE_NAME'),
-        ssl:
-          configService.get('DATABASE_SSL') === 'true'
-            ? { rejectUnauthorized: false }
-            : false,
-        entities: [User, Favorite, WatchLater],
-        // synchronize: configService.get('NODE_ENV') === 'development', // Only for development
-        synchronize: false,
-        logging: configService.get('NODE_ENV') === 'development',
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const isProduction = process.env.NODE_ENV === 'production';
+
+        // Railway-specific: Use process.env directly in production
+        if (isProduction) {
+          console.log('🚀 Railway Production DB Config');
+          console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+
+          return {
+            type: 'postgres',
+            url: process.env.DATABASE_URL, // Direct access for Railway
+            ssl: {
+              rejectUnauthorized: false,
+              checkServerIdentity: false,
+            },
+            entities: [User, Favorite, WatchLater],
+            synchronize: false,
+            logging: false,
+            retryAttempts: 3,
+            retryDelay: 3000,
+            autoLoadEntities: true,
+            extra: {
+              connectionTimeoutMillis: 60000,
+              idleTimeoutMillis: 60000,
+              max: 10,
+              statement_timeout: 60000,
+              idle_in_transaction_session_timeout: 60000,
+            },
+          };
+        }
+
+        // Local development - use ConfigService
+        return {
+          type: 'postgres',
+          host: configService.get<string>('DATABASE_HOST') ?? 'localhost',
+          port: parseInt(
+            configService.get<string>('DATABASE_PORT') ?? '5432',
+            10,
+          ),
+          username: configService.get('DATABASE_USERNAME'),
+          password: configService.get('DATABASE_PASSWORD'),
+          database: configService.get('DATABASE_NAME'),
+          ssl:
+            configService.get('DATABASE_SSL') === 'true'
+              ? { rejectUnauthorized: false }
+              : false,
+          entities: [User, Favorite, WatchLater],
+          synchronize: false,
+          logging: true,
+        };
+      },
       inject: [ConfigService],
     }),
     AuthModule,
