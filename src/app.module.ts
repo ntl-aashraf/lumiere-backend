@@ -23,16 +23,14 @@ import { WatchLater } from './watch-later/entities/watch-later.entity';
         const isProduction = process.env.NODE_ENV === 'production';
 
         if (isProduction) {
-          console.log('🚀 Railway Production DB Config - NUCLEAR SSL BYPASS');
-          console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
-
-          // Override Node.js TLS settings globally
-          process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+          console.log('🚀 Railway Production DB Config - SECURE SSL MODE');
 
           return {
             type: 'postgres',
             url: process.env.DATABASE_URL,
-            ssl: false, // Completely disable SSL
+            ssl: {
+              rejectUnauthorized: false, // Railway doesn't need full cert validation
+            },
             entities: [User, Favorite, WatchLater],
             synchronize: false,
             logging: false,
@@ -45,7 +43,9 @@ import { WatchLater } from './watch-later/entities/watch-later.entity';
               max: 10,
               statement_timeout: 60000,
               idle_in_transaction_session_timeout: 60000,
-              ssl: false, // Also disable in extra options
+              ssl: {
+                rejectUnauthorized: false,
+              },
             },
           };
         }
